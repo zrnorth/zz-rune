@@ -13,19 +13,33 @@ function getSummonerData(summonerName) {
     });
 }
 
+// Given an input list, gets a random subset of this list with num values.
+function getRandomSubset(inputList, num) {
+    if (num <= 0) return null;
+    var output = [];
+
+    for (var i = 0; i < num; i++) {
+        var index = Math.floor(Math.random() * inputList.length);
+        var item = inputList[index];
+        output.push(item);
+        inputList.splice(index, 1); // prevent duplicates
+    }
+    console.log(output);
+    return output;
+}
+
 // Takes a file of pro player names in array format and returns that array.
-function getProListFromFile(filename) {
+function getProListFromFile(filename, num) {
     fs = require('fs');
+    var inputList = [];
+
     fs.readFile(filename, 'utf8', function(err, data) {
         if (err) {
             return console.log(err);
         }
-        return JSON.parse(data);
+        inputList = JSON.parse(data);
+        return getRandomSubset(inputList, num)
     });
 }
 
-function getRandomPro(inputList) {
-
-}
-
-getProListFromFile('pros.js');
+var inputList = getProListFromFile('pros.js', 4);
