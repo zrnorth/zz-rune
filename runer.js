@@ -31,15 +31,8 @@ function getRandomSubset(inputList, num) {
 // Takes a file of pro player names in array format and returns that array.
 function getProListFromFile(filename, num) {
     fs = require('fs');
-    var inputList = [];
-
-    fs.readFile(filename, 'utf8', function(err, data) {
-        if (err) {
-            return console.log(err);
-        }
-        inputList = JSON.parse(data);
-        return getRandomSubset(inputList, num)
-    });
+    var data = fs.readFileSync(filename);
+    var inputList = JSON.parse(data);
+    return getRandomSubset(inputList, num)
 }
 
-var inputList = getProListFromFile('pros.js', 4);
