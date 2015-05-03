@@ -7,6 +7,8 @@ var irelia = new Irelia({
     debug: true
 });
 
+var fs = require('fs');
+
 function getSummonerData(summonerName) {
     irelia.getSummonerByName('na', summonerName, function (err, res){
         console.log(err, res);
@@ -28,11 +30,24 @@ function getRandomSubset(inputList, num) {
     return output;
 }
 
+function loadJSON(filename) {
+    var data = fs.readFileSync(filename);
+    return JSON.parse(data);
+}
+
 // Takes a file of pro player names in array format and returns that array.
 function getProListFromFile(filename, num) {
-    fs = require('fs');
-    var data = fs.readFileSync(filename);
-    var inputList = JSON.parse(data);
+    var inputList = loadJSON(filename);
     return getRandomSubset(inputList, num)
 }
 
+// Given the inputted champion name, get the champ id from the champ info json.
+function getChampId(champName) {
+    var champData = loadJSON("champ_info.js");
+    for (var i = 0; i < champData.length; i++) {
+        if (champData[i].name === champName) {
+            return champData[i].id;
+        }
+    }
+    return null;
+}
