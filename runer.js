@@ -13,8 +13,19 @@ function getSummonerData(summonerName) {
     });
 }
 
+// Takes a file of pro player names in array format and returns that array.
+function getProListFromFile(filename) {
+    fs = require('fs');
+    fs.readFile(filename, 'utf8', function(err, data) {
+        if (err) {
+            return console.log(err);
+        }
+        return JSON.parse(data);
+    });
+}
+
 function getRandomPro(inputList) {
 
 }
 
-getSummonerData("zrnorth");
+getProListFromFile('pros.js');

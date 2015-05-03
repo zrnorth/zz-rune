@@ -1,4 +1,4 @@
-{
+[
     "Turtle the Cat",
     "Pobelter",
     "Eugene J Park",
@@ -8,4 +8,4 @@
     "Popobelterold",
     "HotGuy6Pack",
     "TiP Apollo"
-}
+]
