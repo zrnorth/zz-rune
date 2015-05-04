@@ -2,7 +2,7 @@ var fs = require('fs');
 var request = require('request');
 
 // The call we care about.
-var getRecentGamesBySummonerId = function(region, id, champId, callback) {
+var getMatchHistoryBySummonerId = function(region, id, champId, callback) {
     var path = "/v2.2/matchhistory/" + id + "?championIds=" + champId + "&";
     apiWrapper(region, path, callback);
 }
@@ -13,6 +13,15 @@ var apiWrapper = function(region, path, callback) {
     var endpoint = "https://" + region + ".api.pvp.net/api/lol/" +
                     region + path + "api_key=" + key;
     makeRequest(endpoint, callback);
+}
+
+// Stupid utility function because IE doesn't work with all the simple ways.
+var isEmptyObject = function(obj) {
+    var name;
+    for (name in obj) {
+        return false;
+    }
+    return true;
 }
 
 var makeRequest = function(endpoint, callback) {
@@ -70,20 +79,32 @@ var getChampId = function(champName) {
     return null;
 }
 
-// Based on the inputted champion, get some recent data from professional games.
+// Given a champion, returns a list of recently used rune pages (if enough
+// info is available), each a list of Rune objects.
 var getAggregatedChampInfo = function(champName) {
     var champId = getChampId(champName);
     var pros = getProList(1);
-    var games = [];
+    var runes = [];
     for (var i = 0; i < pros.length; i++) {
         var id = pros[i];
-        getRecentGamesBySummonerId('na', id, champId, function(err, data) {
+        getMatchHistoryBySummonerId('na', id, champId, function(err, data) {
             if (err) {
                 console.log(err);
             }
-            else {
-                console.log(data);
+            else if (isEmptyObject(data)) {
+                console.log("No games found for " + champName);
             }
+            else {
+                for (var m = 0; m < data.matches.length; m++) {
+                    var match = data.matches[m];
+                    
+                    // Sometimes match doesn't contain rune data...
+                    if (match.participants[0].runes !== undefined) {
+                        runes.push(match.participants[0].runes);
+                    }
+                }
+            }
+            console.log(runes);
         });
     }
 }
