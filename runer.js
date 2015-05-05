@@ -79,6 +79,16 @@ var getChampId = function(champName) {
     return null;
 }
 
+var getRuneInfo = function(runeId) {
+    var runeData = loadJSON("rune_info.js");
+    for (var i = 0; i < runeData.length; i++) {
+        if (runeData[i].id === runeId) {
+            return runeData[i];
+        }
+    }
+    
+    return null;
+}
 
 // Global trackers to make sure we don't get throttled.
 var requestsMade = 0;
