@@ -79,32 +79,49 @@ var getChampId = function(champName) {
     return null;
 }
 
-// Given a champion, returns a list of recently used rune pages (if enough
-// info is available), each a list of Rune objects.
+
+// Global trackers to make sure we don't get throttled.
+var requestsMade = 0;
+var maxRequestsAllowed = 3;
+
+// Based on the inputted champion, get some recent data from professional games.
 var getAggregatedChampInfo = function(champName) {
-    var champId = getChampId(champName);
-    var pros = getProList(1);
+    var games = [];
     var runes = [];
+
+    var champId = getChampId(champName);
+    var pros = getProList(maxRequestsAllowed);
     for (var i = 0; i < pros.length; i++) {
         var id = pros[i];
+        if (!id) { // reached the end of our list
+            break;
+        }
         getMatchHistoryBySummonerId('na', id, champId, function(err, data) {
             if (err) {
                 console.log(err);
             }
-            else if (isEmptyObject(data)) {
-                console.log("No games found for " + champName);
-            }
-            else {
+            else if (data.matches) {
                 for (var m = 0; m < data.matches.length; m++) {
                     var match = data.matches[m];
                     
                     // Sometimes match doesn't contain rune data...
+                    // Rito pls
                     if (match.participants[0].runes !== undefined) {
                         runes.push(match.participants[0].runes);
                     }
                 }
             }
-            console.log(runes);
+
+            requestsMade++;
+            
+            if (requestsMade >= maxRequestsAllowed) {
+                if (!runes) {
+                    console.log("No games found :(");
+                }
+                else {
+                    console.log(runes);
+                }
+            }
         });
     }
 }
