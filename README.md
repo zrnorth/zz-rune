@@ -11,7 +11,7 @@ We haven't packaged up the source for distribution yet, so for now clone this re
 ```
 node runer.js -c [CHAMPION]
 ```
-, installing any dependencies that you don't have using
+installing any dependencies that you don't have using
 ```
 npm install [DEPENDENCY]
-```.
+```
