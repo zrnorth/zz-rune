@@ -1,0 +1,11 @@
+{
+    "name": "Runer.js",
+    "description": "Crowdsource professional LoL players to make your rune decisions.",
+    "version": "0.0.1",
+    "private": "true",
+    "dependencies": {
+        "fs": "*",
+        "colors": "*",
+        "request": "*"
+    }
+}
