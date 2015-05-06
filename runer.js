@@ -123,14 +123,57 @@ var getAggregatedChampInfo = function(champId) {
             requestsMade++;
             
             if (requestsMade >= maxRequestsAllowed) {
-                if (!runes) {
+                if (runes.length === 0) {
                     console.log("No games found :(");
                 }
                 else {
-                    console.log(runes);
+                    var processedRuneSets = processRunes(runes);
+                    formattedOutput(processedRuneSets);
                 }
             }
         });
+    }
+}
+
+// Do the analysis on the returned runes, and output the data to the user.
+var processRunes = function(runes) {
+    var runeData = loadJSON('rune_info.js');
+    // We need this in a dictionary for quick lookup
+    var runeDict = {};
+    runeData.forEach(function(x) {
+        var entry = {"name": x.name, "type": x.type, "tier": x.tier, "stat": x.stat, "boost": x.boost};
+        runeDict[x.id] = entry;
+    });
+    var processedRuneSets = [];
+    for (var i = 0; i < runes.length; i++) {
+        var runeEntry = runes[i];
+        var processedRuneSet = [];
+        for (var j = 0; j < runeEntry.length; j++) {
+            var id = runeEntry[j].runeId;
+            var rank = runeEntry[j].rank;
+
+            // Look up the rune by the id, and get our relevant data.
+            // Store the entry in processedRunes so we can keep all of them.
+            var rune = runeDict[id];
+            var processedRune = {"color" : rune.type, "stat" : rune.stat, "boost" : rune.boost, "number" : rank};
+            processedRuneSet.push(processedRune);
+        }
+        processedRuneSets.push(processedRuneSet);
+    }
+    return processedRuneSets;
+}
+
+var formattedOutput = function(runeSets) {
+    console.log("Rune sets found!");
+    for (var i = 0; i < runeSets.length; i++) {
+        console.log("Set " + (i+1) + ":");
+        var runeSet = runeSets[i];
+        for (var j = 0; j < runeSet.length; j++) {
+            var rune = runeSet[j];
+            var totalBoost = (rune.number * rune.boost).toFixed(2);
+            console.log(rune.color + ": " + rune.stat + " x " + rune.number + "   (total boost: " + totalBoost + ")");
+        }
+        console.log("\n");
     }
 }
 
