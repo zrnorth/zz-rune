@@ -100,7 +100,7 @@ var getRuneInfo = function(runeId) {
 
 // Global trackers to make sure we don't get throttled.
 var requestsMade = 0;
-var maxRequestsAllowed = 3;
+var maxRequestsAllowed = 10;
 
 // Based on the inputted champion, get some recent data from professional games.
 var getAggregatedChampInfo = function(champId) {
