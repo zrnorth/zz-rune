@@ -95,11 +95,8 @@ var requestsMade = 0;
 var maxRequestsAllowed = 3;
 
 // Based on the inputted champion, get some recent data from professional games.
-var getAggregatedChampInfo = function(champName) {
-    var games = [];
+var getAggregatedChampInfo = function(champId) {
     var runes = [];
-
-    var champId = getChampId(champName);
     var pros = getProList(maxRequestsAllowed);
     for (var i = 0; i < pros.length; i++) {
         var id = pros[i];
@@ -136,4 +133,34 @@ var getAggregatedChampInfo = function(champName) {
     }
 }
 
-getAggregatedChampInfo("Ryze");
+// Show correct usage to user if input is bad
+var usage = function() {
+    console.log("usage: ");
+    console.log("--champion || -c : specify the input champion to search for");
+}
+
+// Handle command line inputs
+var args = process.argv.slice(2);
+if (args.length != 2) {
+    usage();
+}
+else {
+    for (var i = 0; i < args.length; i++) {
+        if (args[i] === "-c" || args[i] === "--champion") {
+            var champName = args[++i];
+            var champId = getChampId(champName);
+            if (champId) {
+                console.log("Looking for " + champName + " games...");
+                getAggregatedChampInfo(champId);
+            }
+            else {
+                console.log("error: invalid champion name");
+                usage();
+            }
+        }
+        // default: show usage
+        else {
+            usage();
+        }
+    }
+}
