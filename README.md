@@ -8,5 +8,10 @@ determined from this dataset.
 This project uses the Riot API for League of Legends (https://developer.riotgames.com/api/methods).
 
 We haven't packaged up the source for distribution yet, so for now clone this repository and run
-```node runer.js -c [CHAMPION]```, installing any dependencies that you don't have using
-```npm install [DEPENDENCY]```.
+```
+node runer.js -c [CHAMPION]
+```
+, installing any dependencies that you don't have using
+```
+npm install [DEPENDENCY]
+```.
