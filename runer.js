@@ -71,8 +71,9 @@ var getProList = function(num) {
 
 var getChampId = function(champName) {
     var champData = loadJSON("champ_info.js");
+    var champNameLowercase = champName.toLowerCase();
     for (var i = 0; i < champData.length; i++) {
-        if (champData[i].name === champName) {
+        if (champData[i].name === champNameLowercase) {
             return champData[i].id;
         }
     }
