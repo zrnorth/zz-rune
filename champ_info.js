@@ -109,6 +109,7 @@
   {"name": "talon", "id": 91},
   {"name": "taric", "id": 44},
   {"name": "teemo", "id": 17},
+  {"name": "satan", "id": 17},
   {"name": "thresh", "id": 412},
   {"name": "tristana", "id": 18},
   {"name": "trundle", "id": 48},
