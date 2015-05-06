@@ -1,15 +1,12 @@
-1. get list of pro players from hardcode (50? 100?)
-2. query for 15 matches per a random selection from the list (10)
-    - 10 * 15 * 10players/game = 1500 datapoints
-3. sort and pick out the datapoints with the inputted champ
-4. get runes, output each one
-    - later: put into a data structure for concise output
+This is a tool for determining optimal runes in League of Legends
+through crowdsourcing professional players.
 
- tasking:
- - make a query for a sample player and get the data
- - hardcode the players
- - get a random player from the player list and make a query for his data
- - scale this to multiple players, with data rate throttling
- - get the relevant champs out of the data history
- - get the runes for the relevant champs and output them to screen
- - get the runes into a data structure
+We have a giant list of pro player IDs, which we query for recent games
+with the inputted champion. The most popular rune setups can easily be
+determined from this dataset.
+
+This project uses the Riot API for League of Legends (https://developer.riotgames.com/api/methods).
+
+We haven't packaged up the source for distribution yet, so for now clone this repository and run
+`node runer.js -c [CHAMPION]`, installing any dependencies that you don't have using
+`npm install [DEPENDENCY]`.
