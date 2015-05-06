@@ -1,4 +1,5 @@
 var fs = require('fs');
+var colors = require('colors');
 var request = require('request');
 
 // The call we care about.
@@ -185,7 +186,18 @@ var formattedOutput = function(runeSets) {
         for (var j = 0; j < runeSet.length; j++) {
             var rune = runeSet[j];
             var totalBoost = (rune.number * rune.boost).toFixed(2);
-            console.log(rune.color + ": " + rune.stat + " x " + rune.number + "   (total boost: " + totalBoost + ")");
+            if (rune.color === 'red') {
+                console.log(colors.red(rune.color + ": " + rune.stat + " x " + rune.number + "   (total boost: " + totalBoost + ")"));
+            }
+            else if (rune.color === 'yellow') {
+                console.log(colors.yellow(rune.color + ": " + rune.stat + " x " + rune.number + "   (total boost: " + totalBoost + ")"));
+            }
+            else if (rune.color === 'blue') {
+                console.log(colors.blue(rune.color + ": " + rune.stat + " x " + rune.number + "   (total boost: " + totalBoost + ")"));
+            }
+            else { // quint
+                console.log(colors.white(rune.color + ": " + rune.stat + " x " + rune.number + "   (total boost: " + totalBoost + ")"));
+            }
         }
         console.log("\n");
     }
