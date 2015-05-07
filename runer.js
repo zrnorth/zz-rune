@@ -187,11 +187,24 @@ var formattedOutput = function(runeSets) {
                 var totalBoost = (rune.number * rune.boost).toFixed(2);
             }
             
+            var totalBoostAt18 = totalBoost * 18;
+            var percentage = false;
+            
             if (rune.stat === 'critical chance' || rune.stat === 'critical damage' || rune.stat === 'movement speed'
                     || rune.stat === 'attack speed' || rune.stat === 'cooldown reduction' || rune.stat === 'scaling cooldown reduction'
                     || rune.stat === 'percent health' || rune.stat === 'life steal' || rune.stat === 'spell vamp'
                     || rune.stat === 'experience gained') {
                 totalBoost = totalBoost + "%";
+                percentage = true;
+            }
+            
+            if (rune.stat.substring(0, 7) === "scaling") {
+                if (percentage) {
+                    totalBoost = totalBoost + " per level (" + totalBoostAt18 + "% at level 18)";
+                }
+                else {
+                    totalBoost = totalBoost + " per level (" + totalBoostAt18 + " at level 18)";
+                }
             }
             
             if (rune.color === 'red') {
