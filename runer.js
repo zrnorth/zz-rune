@@ -16,15 +16,6 @@ var apiWrapper = function(region, path, callback) {
     makeRequest(endpoint, callback);
 }
 
-// Stupid utility function because IE doesn't work with all the simple ways.
-var isEmptyObject = function(obj) {
-    var name;
-    for (name in obj) {
-        return false;
-    }
-    return true;
-}
-
 var makeRequest = function(endpoint, callback) {
     request.get(endpoint, function(err, res, body) {
         if (err) {
