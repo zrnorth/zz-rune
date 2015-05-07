@@ -1228,21 +1228,21 @@
     "type": "red",
     "tier": 1,
     "stat": "hybrid penetration",
-    "boost": 0.84
+    "boost": [0.5, 0.34]
   },
   { "id": 5401,
     "name": "Mark of Hybrid Penetration",
     "type": "red",
     "tier": 2,
     "stat": "hybrid penetration",
-    "boost": 1.18
+    "boost": [0.7, 0.48]
   },
   { "id": 5402,
     "name": "Greater Mark of Hybrid Penetration",
     "type": "red",
     "tier": 3,
     "stat": "hybrid penetration",
-    "boost": 1.52
+    "boost": [0.9, 0.62]
   },
   { "id": 5403,
     "name": "Greater Seal of Gold",
@@ -1335,26 +1335,26 @@
     "stat": "percent health",
     "boost": 0.5
   },
-  { "id": 5415,
+  { "id": 5416,
     "name": "Lesser Quintessence of Hybrid Penetration",
     "type": "quint",
     "tier": 1,
     "stat": "hybrid penetration",
-    "boost": 1.77
+    "boost": [0.99, 0.78]
   },
   { "id": 5417,
     "name": "Quintessence of Hybrid Penetration",
     "type": "quint",
     "tier": 2,
     "stat": "hybrid penetration",
-    "boost": 2.48
+    "boost": [1.39, 1.09]
   },
   { "id": 5418,
     "name": "Greater Quintessence of Hybrid Penetration",
     "type": "quint",
     "tier": 3,
     "stat": "hybrid penetration",
-    "boost": 3.19
+    "boost": [1.79, 1.4]
   }
 ]
   

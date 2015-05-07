@@ -176,7 +176,24 @@ var formattedOutput = function(runeSets) {
         var runeSet = runeSets[i];
         for (var j = 0; j < runeSet.length; j++) {
             var rune = runeSet[j];
-            var totalBoost = (rune.number * rune.boost).toFixed(2);
+            
+            var totalBoost;
+            if (rune.stat === 'hybrid penetration') {
+                var totalArmor = (rune.number * rune.boost[0]);
+                var totalMagic = (rune.number * rune.boost[1]);
+                totalBoost = totalArmor + " / " + totalMagic;
+            }
+            else {
+                var totalBoost = (rune.number * rune.boost).toFixed(2);
+            }
+            
+            if (rune.stat === 'critical chance' || rune.stat === 'critical damage' || rune.stat === 'movement speed'
+                    || rune.stat === 'attack speed' || rune.stat === 'cooldown reduction' || rune.stat === 'scaling cooldown reduction'
+                    || rune.stat === 'percent health' || rune.stat === 'life steal' || rune.stat === 'spell vamp'
+                    || rune.stat === 'experience gained') {
+                totalBoost = totalBoost + "%";
+            }
+            
             if (rune.color === 'red') {
                 console.log(colors.red(rune.color + ": " + rune.stat + " x " + rune.number + "   (total boost: " + totalBoost + ")"));
             }
