@@ -187,7 +187,7 @@ var formattedOutput = function(runeSets) {
                 var totalBoost = (rune.number * rune.boost).toFixed(2);
             }
             
-            var totalBoostAt18 = totalBoost * 18;
+            var totalBoostAt18 = (totalBoost * 18).toFixed(2);
             var percentage = false;
             
             if (rune.stat === 'critical chance' || rune.stat === 'critical damage' || rune.stat === 'movement speed'
