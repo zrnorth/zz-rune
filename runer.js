@@ -2,7 +2,6 @@ var fs = require('fs');
 var colors = require('colors');
 var request = require('request');
 
-// The call we care about.
 var getMatchHistoryBySummonerId = function(region, id, champId, callback) {
     var path = "/v2.2/matchhistory/" + id + "?championIds=" + champId + "&";
     apiWrapper(region, path, callback);
@@ -133,6 +132,12 @@ var getAggregatedChampInfo = function(champId) {
     }
 }
 
+// Given a runeset as input, returns a hash that can be 
+// used as a dictionary key.
+var hashRuneSet = function(runeSet) {
+    return 1; // TODO implement meeee
+}
+
 // Do the analysis on the returned runes.
 var processRunes = function(runes) {
     var runeData = loadJSON('rune_info.js');
@@ -143,6 +148,7 @@ var processRunes = function(runes) {
         runeDict[x.id] = entry;
     });
     var processedRuneSets = [];
+    var processedRuneDict = {};
     for (var i = 0; i < runes.length; i++) {
         var runeEntry = runes[i];
         var processedRuneSet = [];
@@ -165,6 +171,13 @@ var processRunes = function(runes) {
             }
         }
         processedRuneSets.push(processedRuneSet);
+        var hash = hashRuneSet(processedRuneSet);
+        if (processedRuneDict[hash]) {
+            processedRuneDict[hash][1] += 1;
+        }
+        else { 
+            processedRuneDict[hash] = [processedRuneSet, 1];
+        }
     }
     return processedRuneSets;
 }
