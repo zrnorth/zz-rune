@@ -93,7 +93,7 @@ var requestsMade = 0;
 var maxRequestsAllowed = 10;
 
 // Based on the inputted champion, get some recent data from professional games.
-var getAggregatedChampInfo = function(champId) {
+var getAggregatedChampInfo = function(champId, displayAll) {
     var runes = [];
     var pros = getProList(maxRequestsAllowed);
     for (var i = 0; i < pros.length; i++) {
@@ -124,8 +124,13 @@ var getAggregatedChampInfo = function(champId) {
                     console.log("No games found :(");
                 }
                 else {
-                    var processedRuneSets = processRunes(runes);
-                    formattedOutput(processedRuneSets);
+                    var allProcessedRuneData = processRunes(runes)[0];
+                    var processedRuneDictionary = processRunes(runes)[1];
+                    
+                    if (displayAll) {
+                        printAllRuneSets(allProcessedRuneData);
+                    }
+                    // TODO: Display dictionary data.
                 }
             }
         });
@@ -150,7 +155,7 @@ var hashRuneSet = function(runeSet) {
 }
 
 // Do the analysis on the returned runes.
-var processRunes = function(runes, displayAll) {
+var processRunes = function(runes) {
     var runeData = loadJSON('rune_info.js');
     // We need this in a dictionary for quick lookup
     var runeDict = {};
@@ -190,60 +195,62 @@ var processRunes = function(runes, displayAll) {
             processedRuneDict[hash] = [processedRuneSet, 1];
         }
     }
-    return processedRuneSets;
+    return [processedRuneSets, processedRuneDict];
 }
 
-var formattedOutput = function(runeSets) {
-    console.log("Rune sets found!");
-    for (var i = 0; i < runeSets.length; i++) {
-        console.log("Set " + (i+1) + ":");
-        var runeSet = runeSets[i];
-        for (var j = 0; j < runeSet.length; j++) {
-            var rune = runeSet[j];
-            
-            var totalBoost;
-            if (rune.stat === 'hybrid penetration') {
-                var totalArmor = (rune.number * rune.boost[0]);
-                var totalMagic = (rune.number * rune.boost[1]);
-                totalBoost = totalArmor + " / " + totalMagic;
+var printRuneSet = function(runeSet) {
+    for (var i = 0; i < runeSet.length; i++) {
+        var rune = runeSet[i];
+        
+        var totalBoost;
+        if (rune.stat === 'hybrid penetration') {
+            var totalArmor = (rune.number * rune.boost[0]);
+            var totalMagic = (rune.number * rune.boost[1]);
+            totalBoost = totalArmor + " / " + totalMagic;
+        }
+        else {
+            var totalBoost = (rune.number * rune.boost).toFixed(2);
+        }
+        
+        var totalBoostAt18 = (totalBoost * 18).toFixed(2);
+        var percentage = false;
+        
+        if (rune.stat === 'critical chance' || rune.stat === 'critical damage' || rune.stat === 'movement speed'
+                || rune.stat === 'attack speed' || rune.stat === 'cooldown reduction' || rune.stat === 'scaling cooldown reduction'
+                || rune.stat === 'percent health' || rune.stat === 'life steal' || rune.stat === 'spell vamp'
+                || rune.stat === 'experience gained') {
+            totalBoost = totalBoost + "%";
+            percentage = true;
+        }
+        
+        if (rune.stat.substring(0, 7) === "scaling") {
+            if (percentage) {
+                totalBoost = totalBoost + " per level (" + totalBoostAt18 + "% at level 18)";
             }
             else {
-                var totalBoost = (rune.number * rune.boost).toFixed(2);
-            }
-            
-            var totalBoostAt18 = (totalBoost * 18).toFixed(2);
-            var percentage = false;
-            
-            if (rune.stat === 'critical chance' || rune.stat === 'critical damage' || rune.stat === 'movement speed'
-                    || rune.stat === 'attack speed' || rune.stat === 'cooldown reduction' || rune.stat === 'scaling cooldown reduction'
-                    || rune.stat === 'percent health' || rune.stat === 'life steal' || rune.stat === 'spell vamp'
-                    || rune.stat === 'experience gained') {
-                totalBoost = totalBoost + "%";
-                percentage = true;
-            }
-            
-            if (rune.stat.substring(0, 7) === "scaling") {
-                if (percentage) {
-                    totalBoost = totalBoost + " per level (" + totalBoostAt18 + "% at level 18)";
-                }
-                else {
-                    totalBoost = totalBoost + " per level (" + totalBoostAt18 + " at level 18)";
-                }
-            }
-            
-            if (rune.color === 'red') {
-                console.log(colors.red(rune.color + ": " + rune.stat + " x " + rune.number + "   (total boost: " + totalBoost + ")"));
-            }
-            else if (rune.color === 'yellow') {
-                console.log(colors.yellow(rune.color + ": " + rune.stat + " x " + rune.number + "   (total boost: " + totalBoost + ")"));
-            }
-            else if (rune.color === 'blue') {
-                console.log(colors.blue(rune.color + ": " + rune.stat + " x " + rune.number + "   (total boost: " + totalBoost + ")"));
-            }
-            else { // quint
-                console.log(colors.white(rune.color + ": " + rune.stat + " x " + rune.number + "   (total boost: " + totalBoost + ")"));
+                totalBoost = totalBoost + " per level (" + totalBoostAt18 + " at level 18)";
             }
         }
+        
+        if (rune.color === 'red') {
+            console.log(colors.red(rune.color + ": " + rune.stat + " x " + rune.number + "   (total boost: " + totalBoost + ")"));
+        }
+        else if (rune.color === 'yellow') {
+            console.log(colors.yellow(rune.color + ": " + rune.stat + " x " + rune.number + "   (total boost: " + totalBoost + ")"));
+        }
+        else if (rune.color === 'blue') {
+            console.log(colors.blue(rune.color + ": " + rune.stat + " x " + rune.number + "   (total boost: " + totalBoost + ")"));
+        }
+        else { // quint
+            console.log(colors.white(rune.color + ": " + rune.stat + " x " + rune.number + "   (total boost: " + totalBoost + ")"));
+        }
+    }
+}
+
+var printAllRuneSets = function(runeSets) {
+    for (var i = 0; i < runeSets.length; i++) {
+        console.log("Set " + (i+1) + ":");
+        printRuneSet(runeSets[i]);
         console.log("\n");
     }
 }
