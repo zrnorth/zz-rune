@@ -150,7 +150,7 @@ var hashRuneSet = function(runeSet) {
 }
 
 // Do the analysis on the returned runes.
-var processRunes = function(runes) {
+var processRunes = function(runes, displayAll) {
     var runeData = loadJSON('rune_info.js');
     // We need this in a dictionary for quick lookup
     var runeDict = {};
@@ -252,30 +252,38 @@ var formattedOutput = function(runeSets) {
 var usage = function() {
     console.log("usage: ");
     console.log("--champion || -c : specify the input champion to search for");
+    console.log("--verbose  || -v : output all runesets" );
+    return;
 }
 
 // Handle command line inputs
 var args = process.argv.slice(2);
-if (args.length != 2) {
+if (args.length < 2 || args.length > 4) {
     usage();
 }
 else {
+    var champName;
+    var champId;
+    var displayAll = false;
     for (var i = 0; i < args.length; i++) {
         if (args[i] === "-c" || args[i] === "--champion") {
-            var champName = args[++i];
-            var champId = getChampId(champName);
-            if (champId) {
-                console.log("Looking for " + champName + " games...");
-                getAggregatedChampInfo(champId);
-            }
-            else {
-                console.log("error: invalid champion name");
-                usage();
-            }
+            champName = args[++i];
+            champId = getChampId(champName);
         }
-        // default: show usage
+        else if (args[i] === "-v" || args[i] === "--verbose") {
+            displayAll = true;
+        }
+        // any other arg found: show usage
         else {
-            usage();
+            return usage();
         }
+    }
+    if (champId) {
+        console.log("Looking for " + champName + " games...");
+        getAggregatedChampInfo(champId, displayAll);
+    }
+    else {
+        console.log("invalid champ name");
+        return usage();
     }
 }
