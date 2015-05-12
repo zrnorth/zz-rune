@@ -7,6 +7,11 @@ var getMatchHistoryBySummonerId = function(region, id, champId, callback) {
     apiWrapper(region, path, callback);
 }
 
+var getChallengerLeague = function(region, callback) {
+    var path = "/v2.5/league/challenger?type=RANKED_SOLO_5x5&";
+    apiWrapper(region, path, callback);
+}
+
 var apiWrapper = function(region, path, callback) {
     // Pls don't use my key <3
     var key = '734c49ac-b2f3-4edf-a2cd-34d29a346662';
@@ -37,6 +42,30 @@ var makeRequest = function(endpoint, callback) {
             }
             callback(errorString);
         }
+    });
+}
+
+// Get the current challenger players and put them into pros.js
+var populateProList = function() {
+    getChallengerLeague("na", function(err, data) {
+        if (err) {
+            return console.log(err);
+        }
+        var JSONString = "[\n"
+        
+        for (var i = 0; i < data.entries.length; i++) {
+            var playerId = data.entries[i].playerOrTeamId;
+            JSONString += "  \"" + playerId + "\"";
+            
+            if (i === data.entries.length - 1) {
+                JSONString += "\n]";
+            }
+            else {
+                JSONString += ",\n";
+            }
+        }
+        
+        fs.writeFile('pros.js', JSONString, function(err) {console.log(err)});
     });
 }
 
