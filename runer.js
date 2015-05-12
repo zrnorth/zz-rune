@@ -121,16 +121,17 @@ var getAggregatedChampInfo = function(champId, displayAll) {
             
             if (requestsMade >= maxRequestsAllowed) {
                 if (runes.length === 0) {
-                    console.log("No games found :(");
+                    console.log("No games found :(\n");
                 }
                 else {
+                    console.log("Games found!\n");
                     var allProcessedRuneData = processRunes(runes)[0];
-                    var processedRuneDictionary = processRunes(runes)[1];
+                    var processedRuneSetSummary = processRunes(runes)[1];
                     
                     if (displayAll) {
                         printAllRuneSets(allProcessedRuneData);
                     }
-                    // TODO: Display dictionary data.
+                    printRuneSetSummary(processedRuneSetSummary, allProcessedRuneData.length);
                 }
             }
         });
@@ -189,13 +190,25 @@ var processRunes = function(runes) {
         processedRuneSets.push(processedRuneSet);
         var hash = hashRuneSet(runes[i]);
         if (processedRuneDict[hash]) {
-            processedRuneDict[hash][1] += 1;
+            processedRuneDict[hash].frequency += 1;
         }
         else { 
-            processedRuneDict[hash] = [processedRuneSet, 1];
+            processedRuneDict[hash] = {runes: processedRuneSet, frequency: 1};
         }
     }
-    return [processedRuneSets, processedRuneDict];
+    // Now we need to sort the dictionary by which runeset turned up the most frequently.
+    // First, put into array so we can sort
+    var sortedRuneFrequencies = [];
+    for (var key in processedRuneDict) {
+        if (processedRuneDict.hasOwnProperty(key)) {
+            sortedRuneFrequencies.push(processedRuneDict[key]);
+        }
+    }
+    // Now, sort by frequency
+    sortedRuneFrequencies.sort(function(a, b) {
+        return (a.frequency > b.frequency);
+    });
+    return [processedRuneSets, sortedRuneFrequencies];
 }
 
 var printRuneSet = function(runeSet) {
@@ -271,6 +284,17 @@ var printPercentageBar = function(count, total) {
         }
     }
     console.log("[" + bar + "] " + percentage + "%");
+}
+// Prints the aggregated summary data from the rune set dictionary.
+var printRuneSetSummary = function(processedRuneSetSummary, numRuneSets) {
+    console.log("SUMMARY:\n");
+    // First iteration: get the total number of items
+    for (var i = 0; i < processedRuneSetSummary.length; i++) {
+        var runeSetSummaryEntry = processedRuneSetSummary[i];
+        printPercentageBar(runeSetSummaryEntry.frequency, numRuneSets);
+        printRuneSet(runeSetSummaryEntry.runes);
+        console.log("\n");
+    }
 }
 
 // Show correct usage to user if input is bad
