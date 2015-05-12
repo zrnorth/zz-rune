@@ -255,6 +255,24 @@ var printAllRuneSets = function(runeSets) {
     }
 }
 
+// Displays a line representing the percentage count/total followed by
+// the rounded percentage value.
+var printPercentageBar = function(count, total) {
+    var percentage = (count / total * 100).toFixed(2);
+    
+    var barLength = 40;
+    var bar = "";
+    for (var i = 0; i < barLength; i++) {
+        if (i / barLength < count / total) {
+            bar += "=";
+        }
+        else {
+            bar += " ";
+        }
+    }
+    console.log("[" + bar + "] " + percentage + "%");
+}
+
 // Show correct usage to user if input is bad
 var usage = function() {
     console.log("usage: ");
