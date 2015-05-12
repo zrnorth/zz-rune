@@ -65,7 +65,14 @@ var populateProList = function() {
             }
         }
         
-        fs.writeFile('pros.js', JSONString, function(err) {console.log(err)});
+        fs.writeFile('pros.js', JSONString, function(err) {
+            if (err) {
+                console.log(err)
+            }
+            else {
+                console.log("Updated pros.js.");
+            }
+        });
     });
 }
 
@@ -333,12 +340,13 @@ var usage = function() {
     console.log("usage: ");
     console.log("--champion || -c : specify the input champion to search for");
     console.log("--verbose  || -v : output all runesets" );
+    console.log("--populate || -p : populate the list of challenger players");
     return;
 }
 
 // Handle command line inputs
 var args = process.argv.slice(2);
-if (args.length < 2 || args.length > 4) {
+if (args.length < 1 || args.length > 5) {
     usage();
 }
 else {
@@ -352,6 +360,9 @@ else {
         }
         else if (args[i] === "-v" || args[i] === "--verbose") {
             displayAll = true;
+        }
+        else if (args[i] === "-p" || args[i] === "--populate") {
+            return populateProList();
         }
         // any other arg found: show usage
         else {
