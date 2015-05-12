@@ -135,7 +135,18 @@ var getAggregatedChampInfo = function(champId) {
 // Given a runeset as input, returns a hash that can be 
 // used as a dictionary key.
 var hashRuneSet = function(runeSet) {
-    return 1; // TODO implement meeee
+    // Sort runes by ID
+    runeSet.sort(function(a, b) {
+        return (a.runeId - b.runeId);
+    }); 
+
+    // Create hash of the form [Rune 1 ID][Rune 1 Quntity][Rune 2 ID][Rune 2 Quantity] ... [Rune N ID][Rune N Quantity]
+    var hash = "";
+    for (var i = 0; i < runeSet.length; i++) {
+        hash += runeSet[i].runeId;
+        hash += runeSet[i].rank;
+    }
+    return hash;
 }
 
 // Do the analysis on the returned runes.
@@ -171,7 +182,7 @@ var processRunes = function(runes) {
             }
         }
         processedRuneSets.push(processedRuneSet);
-        var hash = hashRuneSet(processedRuneSet);
+        var hash = hashRuneSet(runes[i]);
         if (processedRuneDict[hash]) {
             processedRuneDict[hash][1] += 1;
         }
