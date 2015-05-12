@@ -10,5 +10,6 @@ This project uses the Riot API for League of Legends (https://developer.riotgame
 To run this, clone the repository and run
 ```
 npm install
+node runer.js -p
 node runer.js -c [CHAMPION]
 ```
