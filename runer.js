@@ -124,14 +124,16 @@ var getAggregatedChampInfo = function(champId, displayAll) {
                     console.log("No games found :(\n");
                 }
                 else {
-                    console.log("Games found!\n");
                     var allProcessedRuneData = processRunes(runes)[0];
                     var processedRuneSetSummary = processRunes(runes)[1];
                     
                     if (displayAll) {
                         printAllRuneSets(allProcessedRuneData);
                     }
-                    printRuneSetSummary(processedRuneSetSummary, allProcessedRuneData.length);
+
+                    var dataSetSize = allProcessedRuneData.length;
+                    printRuneSetSummary(processedRuneSetSummary, dataSetSize);
+                    console.log("Total games found: " + dataSetSize + ".\n");
                 }
             }
         });
