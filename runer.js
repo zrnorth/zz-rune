@@ -209,7 +209,7 @@ var processMasteries = function(masteries) {
         if (mastery.masteryId < 4200) {
             offense += mastery.rank;
         }
-        else if (mastery.masterId < 4300) {
+        else if (mastery.masteryId < 4300) {
             defense += mastery.rank;
         }
         else {
