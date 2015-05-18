@@ -131,6 +131,7 @@ var maxRequestsAllowed = 10;
 // Based on the inputted champion, get some recent data from professional games.
 var getAggregatedChampInfo = function(champId, displayAll) {
     var runes = [];
+    var masteries = [];
     var pros = getProList(maxRequestsAllowed);
     for (var i = 0; i < pros.length; i++) {
         var id = pros[i];
@@ -147,8 +148,9 @@ var getAggregatedChampInfo = function(champId, displayAll) {
                     
                     // Sometimes match doesn't contain rune data...
                     // Rito pls
-                    if (match.participants[0].runes !== undefined) {
+                    if (match.participants[0].runes !== undefined && match.participants[0].masteries !== undefined) {
                         runes.push(match.participants[0].runes);
+                        masteries.push(match.participants[0].masteries);
                     }
                 }
             }
@@ -185,13 +187,38 @@ var hashRunesAndMasteriesSet = function(runeSet, masteries) {
         return (a.runeId - b.runeId);
     }); 
 
-    // Create hash of the form [Rune 1 ID][Rune 1 Quntity][Rune 2 ID][Rune 2 Quantity] ... [Rune N ID][Rune N Quantity]
+    // Create hash of the form [Rune 1 ID][Rune 1 Quntity][Rune 2 ID][Rune 2 Quantity] ... [Rune N ID][Rune N Quantity][Mastery String]
     var hash = "";
     for (var i = 0; i < runeSet.length; i++) {
         hash += runeSet[i].runeId;
         hash += runeSet[i].rank;
     }
+    hash += masteries;
     return hash;
+}
+
+var processMasteries = function(masteries) {
+    var offense = 0;
+    var defense = 0;
+    var utility = 0;
+    
+    // Get counts for Offense/Defense/Utility
+    for (var i = 0; i < masteries.length; i++) {
+        var mastery = masteries[i];
+        
+        if (mastery.masteryId < 4200) {
+            offense += mastery.rank;
+        }
+        else if (mastery.masterId < 4300) {
+            defense += mastery.rank;
+        }
+        else {
+            utility += mastery.rank;
+        }
+    }
+    
+    // Make string xx/xx/xx
+    return (offense + "/" + defense + "/" + utility);
 }
 
 // Do the analysis on the returned runes.
@@ -230,13 +257,13 @@ var processRunesAndMasteries = function(runes, masteries) {
         }
 
         // process masteries
-        var processedMastery = processMasteries(masteries[i]);
+        var processedMasterySet = processMasteries(masteries[i]);
         
         // Combine
         var processedRuneMasterySet = {runes: processedRuneSet, masteries: processedMasterySet};
         processedRuneMasterySets.push(processedRuneMasterySet);
 
-        var hash = hashRunesAndMasteriesSet(runes[i], masteries[i]);
+        var hash = hashRunesAndMasteriesSet(runes[i], processedMasterySet);
         if (processedRuneMasteryDict[hash]) {
             processedRuneMasteryDict[hash].frequency += 1;
         }
