@@ -290,9 +290,8 @@ var processRunesAndMasteries = function(runes, masteries) {
 var printRuneMasterySet = function(runeMasterySet) {
     var runes = runeMasterySet.runes;
     var masteries = runeMasterySet.masteries;
-    for (var i = 0; i < runeMasterySet.length; i++) {
+    for (var i = 0; i < runes.length; i++) {
         var rune = runes[i];
-        var mastery = masteries[i];
         
         // Print runes
         var totalBoost;
@@ -314,7 +313,7 @@ var printRuneMasterySet = function(runeMasterySet) {
                 || rune.stat === 'experience gained') {
             totalBoost = totalBoost + "%";
             percentage = true;
-        }))
+        }
         
         if (rune.stat.substring(0, 7) === "scaling") {
             if (percentage) {
@@ -337,9 +336,9 @@ var printRuneMasterySet = function(runeMasterySet) {
         else { // quint
             console.log(colors.white(rune.color + ": " + rune.stat + " x " + rune.number + "   (total boost: " + totalBoost + ")"));
         }
-        // Print the masteries
-        console.log(colors.cyan("Masteries: "mastery));
     }
+    // Print the masteries
+    console.log(colors.cyan("masteries: " + masteries));
 }
 
 var printAllRuneMasterySets = function(runeMasterySets) {
