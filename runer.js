@@ -160,16 +160,16 @@ var getAggregatedChampInfo = function(champId, displayAll) {
                     console.log("No games found :(\n");
                 }
                 else {
-                    var process = processRunes(runes);
-                    var allProcessedRuneData = process[0];
-                    var processedRuneSetSummary = process[1];
+                    var process = processRunesAndMasteries(runes, masteries);
+                    var allProcessedRuneMasteryData = process[0];
+                    var processedRuneMasterySetSummary = process[1];
                     
                     if (displayAll) {
-                        printAllRuneSets(allProcessedRuneData);
+                        printAllRuneMasterySets(allProcessedRuneMasteryData);
                     }
 
-                    var dataSetSize = allProcessedRuneData.length;
-                    printRuneSetSummary(processedRuneSetSummary, dataSetSize);
+                    var dataSetSize = allProcessedRuneMasteryData.length;
+                    printRuneMasterySetSummary(processedRuneMasterySetSummary, dataSetSize);
                     console.log("Total games found: " + dataSetSize + ".\n");
                 }
             }
@@ -260,10 +260,14 @@ var processRunesAndMasteries = function(runes, masteries) {
     return [processedRuneMasterySets, sortedRuneMasteryFrequencies];
 }
 
-var printRuneSet = function(runeSet) {
-    for (var i = 0; i < runeSet.length; i++) {
-        var rune = runeSet[i];
+var printRuneMasterySet = function(runeMasterySet) {
+    var runes = runeMasterySet.runes;
+    var masteries = runeMasterySet.masteries;
+    for (var i = 0; i < runeMasterySet.length; i++) {
+        var rune = runes[i];
+        var mastery = masteries[i];
         
+        // Print runes
         var totalBoost;
         if (rune.stat === 'hybrid penetration') {
             var totalArmor = (rune.number * rune.boost[0]);
@@ -283,7 +287,7 @@ var printRuneSet = function(runeSet) {
                 || rune.stat === 'experience gained') {
             totalBoost = totalBoost + "%";
             percentage = true;
-        }
+        }))
         
         if (rune.stat.substring(0, 7) === "scaling") {
             if (percentage) {
@@ -306,13 +310,15 @@ var printRuneSet = function(runeSet) {
         else { // quint
             console.log(colors.white(rune.color + ": " + rune.stat + " x " + rune.number + "   (total boost: " + totalBoost + ")"));
         }
+        // Print the masteries
+        console.log(colors.cyan("Masteries: "mastery));
     }
 }
 
-var printAllRuneSets = function(runeSets) {
-    for (var i = 0; i < runeSets.length; i++) {
+var printAllRuneMasterySets = function(runeMasterySets) {
+    for (var i = 0; i < runeMasterySets.length; i++) {
         console.log("Set " + (i+1) + ":");
-        printRuneSet(runeSets[i]);
+        printRuneMasterySet(runeSets[i]);
         console.log("\n");
     }
 }
@@ -335,13 +341,13 @@ var printPercentageBar = function(count, total) {
     console.log("[" + bar + "] " + percentage + "%");
 }
 // Prints the aggregated summary data from the rune set dictionary.
-var printRuneSetSummary = function(processedRuneSetSummary, numRuneSets) {
+var printRuneMasterySetSummary = function(processedRuneMasterySetSummary, numSets) {
     console.log("SUMMARY:\n");
     // First iteration: get the total number of items
-    for (var i = 0; i < processedRuneSetSummary.length; i++) {
-        var runeSetSummaryEntry = processedRuneSetSummary[i];
-        printPercentageBar(runeSetSummaryEntry.frequency, numRuneSets);
-        printRuneSet(runeSetSummaryEntry.runes);
+    for (var i = 0; i < processedRuneMasterySetSummary.length; i++) {
+        var summaryEntry = processedRuneMasterySetSummary[i];
+        printPercentageBar(summaryEntry.frequency, numSets);
+        printRuneMasterySet(summaryEntry.runesAndMasteries);
         console.log("\n");
     }
 }
