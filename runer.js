@@ -131,6 +131,7 @@ var maxRequestsAllowed = 10;
 // Based on the inputted champion, get some recent data from professional games.
 var getAggregatedChampInfo = function(champId, displayAll) {
     var runes = [];
+    var masteries = [];
     var pros = getProList(maxRequestsAllowed);
     for (var i = 0; i < pros.length; i++) {
         var id = pros[i];
@@ -147,8 +148,9 @@ var getAggregatedChampInfo = function(champId, displayAll) {
                     
                     // Sometimes match doesn't contain rune data...
                     // Rito pls
-                    if (match.participants[0].runes !== undefined) {
+                    if (match.participants[0].runes !== undefined && match.participants[0].masteries !== undefined) {
                         runes.push(match.participants[0].runes);
+                        masteries.push(match.participants[0].masteries);
                     }
                 }
             }
@@ -160,15 +162,16 @@ var getAggregatedChampInfo = function(champId, displayAll) {
                     console.log("No games found :(\n");
                 }
                 else {
-                    var allProcessedRuneData = processRunes(runes)[0];
-                    var processedRuneSetSummary = processRunes(runes)[1];
+                    var process = processRunesAndMasteries(runes, masteries);
+                    var allProcessedRuneMasteryData = process[0];
+                    var processedRuneMasterySetSummary = process[1];
                     
                     if (displayAll) {
-                        printAllRuneSets(allProcessedRuneData);
+                        printAllRuneMasterySets(allProcessedRuneMasteryData);
                     }
 
-                    var dataSetSize = allProcessedRuneData.length;
-                    printRuneSetSummary(processedRuneSetSummary, dataSetSize);
+                    var dataSetSize = allProcessedRuneMasteryData.length;
+                    printRuneMasterySetSummary(processedRuneMasterySetSummary, dataSetSize);
                     console.log("Total games found: " + dataSetSize + ".\n");
                 }
             }
@@ -178,23 +181,48 @@ var getAggregatedChampInfo = function(champId, displayAll) {
 
 // Given a runeset as input, returns a hash that can be 
 // used as a dictionary key.
-var hashRuneSet = function(runeSet) {
+var hashRunesAndMasteriesSet = function(runeSet, masteries) {
     // Sort runes by ID
     runeSet.sort(function(a, b) {
         return (a.runeId - b.runeId);
     }); 
 
-    // Create hash of the form [Rune 1 ID][Rune 1 Quntity][Rune 2 ID][Rune 2 Quantity] ... [Rune N ID][Rune N Quantity]
+    // Create hash of the form [Rune 1 ID][Rune 1 Quntity][Rune 2 ID][Rune 2 Quantity] ... [Rune N ID][Rune N Quantity][Mastery String]
     var hash = "";
     for (var i = 0; i < runeSet.length; i++) {
         hash += runeSet[i].runeId;
         hash += runeSet[i].rank;
     }
+    hash += masteries;
     return hash;
 }
 
+var processMasteries = function(masteries) {
+    var offense = 0;
+    var defense = 0;
+    var utility = 0;
+    
+    // Get counts for Offense/Defense/Utility
+    for (var i = 0; i < masteries.length; i++) {
+        var mastery = masteries[i];
+        
+        if (mastery.masteryId < 4200) {
+            offense += mastery.rank;
+        }
+        else if (mastery.masterId < 4300) {
+            defense += mastery.rank;
+        }
+        else {
+            utility += mastery.rank;
+        }
+    }
+    
+    // Make string xx/xx/xx
+    return (offense + "/" + defense + "/" + utility);
+}
+
 // Do the analysis on the returned runes.
-var processRunes = function(runes) {
+var processRunesAndMasteries = function(runes, masteries) {
     var runeData = loadJSON('rune_info.js');
     // We need this in a dictionary for quick lookup
     var runeDict = {};
@@ -202,8 +230,10 @@ var processRunes = function(runes) {
         var entry = {"name": x.name, "type": x.type, "tier": x.tier, "stat": x.stat, "boost": x.boost};
         runeDict[x.id] = entry;
     });
-    var processedRuneSets = [];
-    var processedRuneDict = {};
+    var processedRuneMasterySets = [];
+    var processedRuneMasteryDict = {};
+
+    // Process runes
     for (var i = 0; i < runes.length; i++) {
         var runeEntry = runes[i];
         var processedRuneSet = [];
@@ -225,34 +255,45 @@ var processRunes = function(runes) {
                 processedRuneSet.push(processedRune);
             }
         }
-        processedRuneSets.push(processedRuneSet);
-        var hash = hashRuneSet(runes[i]);
-        if (processedRuneDict[hash]) {
-            processedRuneDict[hash].frequency += 1;
+
+        // process masteries
+        var processedMasterySet = processMasteries(masteries[i]);
+        
+        // Combine
+        var processedRuneMasterySet = {runes: processedRuneSet, masteries: processedMasterySet};
+        processedRuneMasterySets.push(processedRuneMasterySet);
+
+        var hash = hashRunesAndMasteriesSet(runes[i], processedMasterySet);
+        if (processedRuneMasteryDict[hash]) {
+            processedRuneMasteryDict[hash].frequency += 1;
         }
         else { 
-            processedRuneDict[hash] = {runes: processedRuneSet, frequency: 1};
+            processedRuneMasteryDict[hash] = {runesAndMasteries: processedRuneMasterySet,  frequency: 1};
         }
     }
+
     // Now we need to sort the dictionary by which runeset turned up the most frequently.
     // First, put into array so we can sort
-    var sortedRuneFrequencies = [];
-    for (var key in processedRuneDict) {
-        if (processedRuneDict.hasOwnProperty(key)) {
-            sortedRuneFrequencies.push(processedRuneDict[key]);
+    var sortedRuneMasteryFrequencies = [];
+    for (var key in processedRuneMasteryDict) {
+        if (processedRuneMasteryDict.hasOwnProperty(key)) {
+            sortedRuneMasteryFrequencies.push(processedRuneMasteryDict[key]);
         }
     }
     // Now, sort by frequency
-    sortedRuneFrequencies.sort(function(a, b) {
+    sortedRuneMasteryFrequencies.sort(function(a, b) {
         return (a.frequency > b.frequency);
     });
-    return [processedRuneSets, sortedRuneFrequencies];
+    return [processedRuneMasterySets, sortedRuneMasteryFrequencies];
 }
 
-var printRuneSet = function(runeSet) {
-    for (var i = 0; i < runeSet.length; i++) {
-        var rune = runeSet[i];
+var printRuneMasterySet = function(runeMasterySet) {
+    var runes = runeMasterySet.runes;
+    var masteries = runeMasterySet.masteries;
+    for (var i = 0; i < runes.length; i++) {
+        var rune = runes[i];
         
+        // Print runes
         var totalBoost;
         if (rune.stat === 'hybrid penetration') {
             var totalArmor = (rune.number * rune.boost[0]);
@@ -296,12 +337,14 @@ var printRuneSet = function(runeSet) {
             console.log(colors.white(rune.color + ": " + rune.stat + " x " + rune.number + "   (total boost: " + totalBoost + ")"));
         }
     }
+    // Print the masteries
+    console.log(colors.cyan("masteries: " + masteries));
 }
 
-var printAllRuneSets = function(runeSets) {
-    for (var i = 0; i < runeSets.length; i++) {
+var printAllRuneMasterySets = function(runeMasterySets) {
+    for (var i = 0; i < runeMasterySets.length; i++) {
         console.log("Set " + (i+1) + ":");
-        printRuneSet(runeSets[i]);
+        printRuneMasterySet(runeSets[i]);
         console.log("\n");
     }
 }
@@ -324,13 +367,13 @@ var printPercentageBar = function(count, total) {
     console.log("[" + bar + "] " + percentage + "%");
 }
 // Prints the aggregated summary data from the rune set dictionary.
-var printRuneSetSummary = function(processedRuneSetSummary, numRuneSets) {
+var printRuneMasterySetSummary = function(processedRuneMasterySetSummary, numSets) {
     console.log("SUMMARY:\n");
     // First iteration: get the total number of items
-    for (var i = 0; i < processedRuneSetSummary.length; i++) {
-        var runeSetSummaryEntry = processedRuneSetSummary[i];
-        printPercentageBar(runeSetSummaryEntry.frequency, numRuneSets);
-        printRuneSet(runeSetSummaryEntry.runes);
+    for (var i = 0; i < processedRuneMasterySetSummary.length; i++) {
+        var summaryEntry = processedRuneMasterySetSummary[i];
+        printPercentageBar(summaryEntry.frequency, numSets);
+        printRuneMasterySet(summaryEntry.runesAndMasteries);
         console.log("\n");
     }
 }
