@@ -203,8 +203,10 @@ var processRunesAndMasteries = function(runes, masteries) {
         var entry = {"name": x.name, "type": x.type, "tier": x.tier, "stat": x.stat, "boost": x.boost};
         runeDict[x.id] = entry;
     });
-    var processedRuneSets = [];
-    var processedRuneDict = {};
+    var processedRuneMasterySets = [];
+    var processedRuneMasteryDict = {};
+
+    // Process runes
     for (var i = 0; i < runes.length; i++) {
         var runeEntry = runes[i];
         var processedRuneSet = [];
@@ -226,20 +228,28 @@ var processRunesAndMasteries = function(runes, masteries) {
                 processedRuneSet.push(processedRune);
             }
         }
-        processedRuneSets.push(processedRuneSet);
+
+        // process masteries
+        var processedMastery = processMasteries(masteries[i]);
+        
+        // Combine
+        var processedRuneMasterySet = {runes: processedRuneSet, masteries: processedMasterySet};
+        processedRuneMasterySets.push(processedRuneMasterySet);
+
         var hash = hashRunesAndMasteriesSet(runes[i], masteries[i]);
         if (processedRuneMasteryDict[hash]) {
             processedRuneMasteryDict[hash].frequency += 1;
         }
         else { 
-            processedRuneDict[hash] = {runes: processedRuneSet, masteries: masteries[i],  frequency: 1};
+            processedRuneMasteryDict[hash] = {runesAndMasteries: processedRuneMasterySet,  frequency: 1};
         }
     }
+
     // Now we need to sort the dictionary by which runeset turned up the most frequently.
     // First, put into array so we can sort
     var sortedRuneMasteryFrequencies = [];
-    for (var key in processedRuneDict) {
-        if (processedRuneDict.hasOwnProperty(key)) {
+    for (var key in processedRuneMasteryDict) {
+        if (processedRuneMasteryDict.hasOwnProperty(key)) {
             sortedRuneMasteryFrequencies.push(processedRuneMasteryDict[key]);
         }
     }
@@ -247,7 +257,7 @@ var processRunesAndMasteries = function(runes, masteries) {
     sortedRuneMasteryFrequencies.sort(function(a, b) {
         return (a.frequency > b.frequency);
     });
-    return [processedRuneSets, masteries, sortedRuneMasteryFrequencies];
+    return [processedRuneMasterySets, sortedRuneMasteryFrequencies];
 }
 
 var printRuneSet = function(runeSet) {
