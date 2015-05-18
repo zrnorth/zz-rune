@@ -160,8 +160,9 @@ var getAggregatedChampInfo = function(champId, displayAll) {
                     console.log("No games found :(\n");
                 }
                 else {
-                    var allProcessedRuneData = processRunes(runes)[0];
-                    var processedRuneSetSummary = processRunes(runes)[1];
+                    var process = processRunes(runes);
+                    var allProcessedRuneData = process[0];
+                    var processedRuneSetSummary = process[1];
                     
                     if (displayAll) {
                         printAllRuneSets(allProcessedRuneData);
@@ -178,7 +179,7 @@ var getAggregatedChampInfo = function(champId, displayAll) {
 
 // Given a runeset as input, returns a hash that can be 
 // used as a dictionary key.
-var hashRuneSet = function(runeSet) {
+var hashRunesAndMasteriesSet = function(runeSet, masteries) {
     // Sort runes by ID
     runeSet.sort(function(a, b) {
         return (a.runeId - b.runeId);
@@ -194,7 +195,7 @@ var hashRuneSet = function(runeSet) {
 }
 
 // Do the analysis on the returned runes.
-var processRunes = function(runes) {
+var processRunesAndMasteries = function(runes, masteries) {
     var runeData = loadJSON('rune_info.js');
     // We need this in a dictionary for quick lookup
     var runeDict = {};
@@ -226,27 +227,27 @@ var processRunes = function(runes) {
             }
         }
         processedRuneSets.push(processedRuneSet);
-        var hash = hashRuneSet(runes[i]);
-        if (processedRuneDict[hash]) {
-            processedRuneDict[hash].frequency += 1;
+        var hash = hashRunesAndMasteriesSet(runes[i], masteries[i]);
+        if (processedRuneMasteryDict[hash]) {
+            processedRuneMasteryDict[hash].frequency += 1;
         }
         else { 
-            processedRuneDict[hash] = {runes: processedRuneSet, frequency: 1};
+            processedRuneDict[hash] = {runes: processedRuneSet, masteries: masteries[i],  frequency: 1};
         }
     }
     // Now we need to sort the dictionary by which runeset turned up the most frequently.
     // First, put into array so we can sort
-    var sortedRuneFrequencies = [];
+    var sortedRuneMasteryFrequencies = [];
     for (var key in processedRuneDict) {
         if (processedRuneDict.hasOwnProperty(key)) {
-            sortedRuneFrequencies.push(processedRuneDict[key]);
+            sortedRuneMasteryFrequencies.push(processedRuneMasteryDict[key]);
         }
     }
     // Now, sort by frequency
-    sortedRuneFrequencies.sort(function(a, b) {
+    sortedRuneMasteryFrequencies.sort(function(a, b) {
         return (a.frequency > b.frequency);
     });
-    return [processedRuneSets, sortedRuneFrequencies];
+    return [processedRuneSets, masteries, sortedRuneMasteryFrequencies];
 }
 
 var printRuneSet = function(runeSet) {
