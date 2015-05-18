@@ -344,7 +344,7 @@ var printRuneMasterySet = function(runeMasterySet) {
 var printAllRuneMasterySets = function(runeMasterySets) {
     for (var i = 0; i < runeMasterySets.length; i++) {
         console.log("Set " + (i+1) + ":");
-        printRuneMasterySet(runeSets[i]);
+        printRuneMasterySet(runeMasterySets[i]);
         console.log("\n");
     }
 }
