@@ -282,7 +282,7 @@ var processRunesAndMasteries = function(runes, masteries) {
     }
     // Now, sort by frequency
     sortedRuneMasteryFrequencies.sort(function(a, b) {
-        return (a.frequency > b.frequency);
+        return (a.frequency - b.frequency);
     });
     return [processedRuneMasterySets, sortedRuneMasteryFrequencies];
 }
