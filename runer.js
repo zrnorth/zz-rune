@@ -10,6 +10,7 @@
 var fs = require('fs');
 var colors = require('colors');
 var request = require('request');
+var path = require('path');
 
 // The Riot Developer API calls we make for this application.
 var getMatchHistoryBySummonerId = function(region, id, champId, callback) {
@@ -80,7 +81,7 @@ var populateProList = function() {
             }
         }
         
-        fs.writeFile('pros.js', JSONString, function(err) {
+        fs.writeFile(path.join(__dirname, 'data/pros.js'), JSONString, function(err) {
             if (err) {
                 console.log(err)
             }
@@ -93,7 +94,8 @@ var populateProList = function() {
 
 // Helper function for loading data from JSONs synchronously.
 var loadJSON = function(filename) {
-    var data = fs.readFileSync(filename);
+    // Path.join allows relative filenames.
+    var data = fs.readFileSync(path.join(__dirname, '/', filename));
     return JSON.parse(data);
 }
 
@@ -115,14 +117,14 @@ var getRandomSubset = function(inputList, num) {
 
 // Get a "num"-sized list of pro players randomly selected from pros.js.
 var getProList = function(num) {
-    var inputList = loadJSON("pros.js");
+    var inputList = loadJSON("data/pros.js");
     return getRandomSubset(inputList, num)
 }
 
 // Given a champion name (any case), return the champion's ID as represented
 // in the Riot Developer API.
 var getChampId = function(champName) {
-    var champData = loadJSON("champ_info.js");
+    var champData = loadJSON("data/champ_info.js");
     var champNameLowercase = champName.toLowerCase();
     for (var i = 0; i < champData.length; i++) {
         if (champData[i].name === champNameLowercase) {
@@ -134,7 +136,7 @@ var getChampId = function(champName) {
 
 // Load rune data from JSON file, and return the object.
 var getRuneInfo = function(runeId) {
-    var runeData = loadJSON("rune_info.js");
+    var runeData = loadJSON("data/rune_info.js");
     for (var i = 0; i < runeData.length; i++) {
         if (runeData[i].id === runeId) {
             return runeData[i];
@@ -252,7 +254,7 @@ var processMasteries = function(masteries) {
 // Analyze the input lists of runes and masteries. Returns an object containing
 // all reformatted sets, as well as a list of the most common rune-mastery sets.
 var processRunesAndMasteries = function(runes, masteries) {
-    var runeData = loadJSON('rune_info.js');
+    var runeData = loadJSON('data/rune_info.js');
     // We need this in a dictionary for quick lookup.
     var runeDict = {};
     runeData.forEach(function(x) {
