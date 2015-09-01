@@ -1,12 +1,3 @@
-/**
- * Lol-Runer
- *
- * Command line tool made to prosource the best runes and masteries for your
- * favorite League of Legends champions.
- *
- * Authors: Zach North (www.zachnorth.com) and Rory Snively (rorysnively.com)
- */
-
 var fs = require('fs');
 var path = require('path');
 
