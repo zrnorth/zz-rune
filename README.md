@@ -10,6 +10,6 @@ This project uses the Riot API for League of Legends (https://developer.riotgame
 To run this, clone the repository and run
 ```
 npm install
-node zzrune.js -p
-node zzrune.js -c [CHAMPION]
+node zzrune -p
+node zzrune -c [CHAMPION]
 ```
