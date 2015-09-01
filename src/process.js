@@ -8,11 +8,11 @@
  */
 
 var fs = require('fs');
-var colors = require('colors');
 var path = require('path');
 
 var api = require('../api/wrapper');
 var utils = require('./utils');
+var display = require('./display');
 
 // Global trackers to make sure we don't get throttled.
 var requestsMade = 0;
@@ -34,7 +34,7 @@ module.exports = {
             // fit these criteria are placed in "data" object.
             api.getMatchHistoryBySummonerId('na', id, champId, function(err, data) {
                 if (err) {
-                    console.log(err);
+                    return display.error(err);
                 }
                 else if (data.matches) {
                     for (var m = 0; m < data.matches.length; m++) {
@@ -54,7 +54,7 @@ module.exports = {
                 // data we have, or report that none was found.
                 if (requestsMade >= maxRequestsAllowed) {
                     if (runes.length === 0) {
-                        console.log("No games found :(\n");
+                        display.noGamesFound();
                     }
                     else {
                         // Analyze the runes and masteries for the given champion.
@@ -64,13 +64,12 @@ module.exports = {
                         
                         // Display all the data (verbose mode only).
                         if (displayAll) {
-                            printAllRuneMasterySets(allProcessedRuneMasteryData);
+                            display.printAllRuneMasterySets(allProcessedRuneMasteryData);
                         }
 
                         // Display the sorted, processed data (normal mode).
                         var dataSetSize = allProcessedRuneMasteryData.length;
-                        printRuneMasterySetSummary(processedRuneMasterySetSummary, dataSetSize);
-                        console.log("Total games found: " + dataSetSize + ".\n");
+                        display.printRuneMasterySetSummary(processedRuneMasterySetSummary, dataSetSize);
                     }
                 }
             });
@@ -95,7 +94,7 @@ module.exports = {
     populateProList : function() {
         api.getChallengerLeague("na", function(err, data) {
             if (err) {
-                return console.log(err);
+                return display.error(err);
             }
             var JSONString = "[\n"
             
@@ -113,28 +112,15 @@ module.exports = {
             
             fs.writeFile(path.join(__dirname, '../data/pros.js'), JSONString, function(err) {
                 if (err) {
-                    console.log(err)
+                    return display.error(err);
                 }
                 else {
-                    console.log("Updated pros.js.");
+                    display.updatedPros();
                 }
             });
         });
     }
 }
-
-// Load rune data from JSON file, and return the object.
-var getRuneInfo = function(runeId) {
-    var runeData = utils.loadJSON("../data/rune_info.js");
-    for (var i = 0; i < runeData.length; i++) {
-        if (runeData[i].id === runeId) {
-            return runeData[i];
-        }
-    }
-    
-    return null;
-}
-
 
 // Given a set of runes and masteries, return a unique hash string.
 var hashRunesAndMasteriesSet = function(runeSet, masteries) {
@@ -152,6 +138,32 @@ var hashRunesAndMasteriesSet = function(runeSet, masteries) {
     hash += masteries;
     return hash;
 }
+
+
+// looks up the runes in a rune entry by id and puts them into a list.
+var processRunes = function(runeEntry, runeDict) {
+    var processedRuneSet = [];
+    for (var i = 0; i < runeEntry.length; i++) {
+        var id = runeEntry[i].runeId;
+        var rank = runeEntry[i].rank;
+
+        // Look up the rune by the id, and get our relevant data.
+        // Store the entry in processedRunes so we can keep all of them.
+        var rune = runeDict[id];
+        if (!rune) { 
+            //lookup failed. this is probably an error in the rune data file.
+            //just continue
+            var errorRune = {"color" : "error", "stat" : "error", "boost" : 0, "number" : 0}
+            processedRuneSet.push(errorRune);
+        }
+        else { // lookup succeeded
+            var processedRune = {"color" : rune.type, "stat" : rune.stat, "boost" : rune.boost, "number" : rank};
+            processedRuneSet.push(processedRune);
+        }
+    }
+    return processedRuneSet;
+}
+
 
 // Given a masteries object, return the corresponding string of the form
 // [Number of Offensive Masteries]/[Number of Defensive Masteries]/[Number of
@@ -180,9 +192,11 @@ var processMasteries = function(masteries) {
     return (offense + "/" + defense + "/" + utility);
 }
 
+
 // Analyze the input lists of runes and masteries. Returns an object containing
 // all reformatted sets, as well as a list of the most common rune-mastery sets.
 var processRunesAndMasteries = function(runes, masteries) {
+
     var runeData = utils.loadJSON('../data/rune_info.js');
     // We need this in a dictionary for quick lookup.
     var runeDict = {};
@@ -193,30 +207,8 @@ var processRunesAndMasteries = function(runes, masteries) {
     var processedRuneMasterySets = [];
     var processedRuneMasteryDict = {};
 
-    // Process runes
     for (var i = 0; i < runes.length; i++) {
-        var runeEntry = runes[i];
-        var processedRuneSet = [];
-        for (var j = 0; j < runeEntry.length; j++) {
-            var id = runeEntry[j].runeId;
-            var rank = runeEntry[j].rank;
-
-            // Look up the rune by the id, and get our relevant data.
-            // Store the entry in processedRunes so we can keep all of them.
-            var rune = runeDict[id];
-            if (!rune) { 
-                //lookup failed. this is probably an error in the rune data file.
-                //just continue
-                var errorRune = {"color" : "error", "stat" : "error", "boost" : 0, "number" : 0}
-                processedRuneSet.push(errorRune);
-            }
-            else { // lookup succeeded
-                var processedRune = {"color" : rune.type, "stat" : rune.stat, "boost" : rune.boost, "number" : rank};
-                processedRuneSet.push(processedRune);
-            }
-        }
-
-        // Process masteries
+        var processedRuneSet = processRunes(runes[i], runeDict);
         var processedMasterySet = processMasteries(masteries[i]);
         
         // Combine the runes and masteries to put into dictionary.
@@ -247,98 +239,4 @@ var processRunesAndMasteries = function(runes, masteries) {
         return (a.frequency - b.frequency);
     });
     return [processedRuneMasterySets, sortedRuneMasteryFrequencies];
-}
-
-// Display a set of runes and masteries.
-var printRuneMasterySet = function(runeMasterySet) {
-    var runes = runeMasterySet.runes;
-    var masteries = runeMasterySet.masteries;
-    for (var i = 0; i < runes.length; i++) {
-        var rune = runes[i];
-        
-        // Print runes.
-        var totalBoost;
-        if (rune.stat === 'hybrid penetration') {
-            var totalArmor = (rune.number * rune.boost[0]);
-            var totalMagic = (rune.number * rune.boost[1]);
-            totalBoost = totalArmor + " / " + totalMagic;
-        }
-        else {
-            var totalBoost = (rune.number * rune.boost).toFixed(2);
-        }
-        
-        var totalBoostAt18 = (totalBoost * 18).toFixed(2);
-        var percentage = false;
-        
-        if (rune.stat === 'critical chance' || rune.stat === 'critical damage' || rune.stat === 'movement speed'
-                || rune.stat === 'attack speed' || rune.stat === 'cooldown reduction' || rune.stat === 'scaling cooldown reduction'
-                || rune.stat === 'percent health' || rune.stat === 'life steal' || rune.stat === 'spell vamp'
-                || rune.stat === 'experience gained') {
-            totalBoost = totalBoost + "%";
-            percentage = true;
-        }
-        
-        if (rune.stat.substring(0, 7) === "scaling") {
-            if (percentage) {
-                totalBoost = totalBoost + " per level (" + totalBoostAt18 + "% at level 18)";
-            }
-            else {
-                totalBoost = totalBoost + " per level (" + totalBoostAt18 + " at level 18)";
-            }
-        }
-        
-        if (rune.color === 'red') {
-            console.log(colors.red(rune.color + ": " + rune.stat + " x " + rune.number + "   (total boost: " + totalBoost + ")"));
-        }
-        else if (rune.color === 'yellow') {
-            console.log(colors.yellow(rune.color + ": " + rune.stat + " x " + rune.number + "   (total boost: " + totalBoost + ")"));
-        }
-        else if (rune.color === 'blue') {
-            console.log(colors.blue(rune.color + ": " + rune.stat + " x " + rune.number + "   (total boost: " + totalBoost + ")"));
-        }
-        else { // Quints
-            console.log(colors.white(rune.color + ": " + rune.stat + " x " + rune.number + "   (total boost: " + totalBoost + ")"));
-        }
-    }
-    // Print masteries.
-    console.log(colors.cyan("masteries: " + masteries));
-}
-
-// Print a set of rune/mastery sets.
-var printAllRuneMasterySets = function(runeMasterySets) {
-    for (var i = 0; i < runeMasterySets.length; i++) {
-        console.log("Set " + (i+1) + ":");
-        printRuneMasterySet(runeMasterySets[i]);
-        console.log("\n");
-    }
-}
-
-// Displays a line representing the percentage count/total followed by
-// the rounded percentage value.
-var printPercentageBar = function(count, total) {
-    var percentage = (count / total * 100).toFixed(2);
-    
-    var barLength = 40;
-    var bar = "";
-    for (var i = 0; i < barLength; i++) {
-        if (i / barLength < count / total) {
-            bar += "=";
-        }
-        else {
-            bar += " ";
-        }
-    }
-    console.log("[" + bar + "] " + percentage + "%");
-}
-
-// Prints the aggregated summary data from the rune set dictionary.
-var printRuneMasterySetSummary = function(processedRuneMasterySetSummary, numSets) {
-    console.log("SUMMARY:\n");
-    // First iteration: get the total number of items
-    for (var i = 0; i < processedRuneMasterySetSummary.length; i++) {
-        var summaryEntry = processedRuneMasterySetSummary[i];
-        printPercentageBar(summaryEntry.frequency, numSets);
-        printRuneMasterySet(summaryEntry.runesAndMasteries);
-        console.log("\n");
-    }
 }
