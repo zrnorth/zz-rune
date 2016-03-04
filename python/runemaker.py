@@ -67,9 +67,27 @@ def get_runepages(championList, maxPages):
             count += 1
         else:
             leftOut.append( (key, merged[key]) )
-    print("Results: ")
-    print(results)
+            
+    print("\n\nResults: ")
+    get_runepages_printer(results, 1)
     if leftOut:
-        print("These pages were left out: ")
-        print(leftOut)
+        print("\nThese pages were left out: ")
+        get_runepages_printer(leftOut, 1+len(results))
+       
+def get_runepages_printer(results, startNum):
+    for result in results:
+        runes = result[0]
+        score = result[1][0]
+        champRolesList = result[1][1]
+        
+        print( ("RUNE PAGE {0}: {1}\nUsed by {2} roles: {3}\n").format(startNum, runes, score, champRolesList) )
+        startNum += 1
     
+def main():
+    maxPages = int(input("How many rune pages do you own? "))
+    champs = input("What champs are you interested in playing? Seperate with commas. ").split(', ')
+    print(champs)
+    get_runepages(champs, maxPages)
+
+if __name__ == "__main__":
+    main()
