@@ -1,0 +1,31 @@
+Pain point: runes and masteries
+- lots of diff configs for lots of diff champions
+
+Given an input: # of rune pages
+I want to output a set of rune pages = the number of pages i currently have.
+- if there are multiples that can be used for some of my fav champs, group them
+
+
+Say I have 5 pages and my fav champs are
+1. Cait
+2. Ashe
+3. Leblanc
+4. Thresh
+5. Alistar
+6. Azir
+...
+
+
+Naive way: get a rune page for each of my top 5. This should be easy to do.
+Next: start combining them. Ex: my 1 and 2 should be the same, so combine them and go to 6.
+Next: start combining them "smartly" - my cait and ashe ones might be off by like a MS rune, but
+    a well rounded portfolio of rune pages should combine these for you and get a totally diff set
+    
+Steps:
+1. Get riot api setup (do python this time!) and a sample call working. DONE
+2. Get player data and spit to screen for a username. 
+- Fields we need:
+    - player's rune pages
+    - 
+3. Get data from Champion.gg and spit to screen.
+4. Start combining.
