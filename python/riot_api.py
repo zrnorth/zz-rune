@@ -9,26 +9,23 @@ import requests
 __location__ = os.path.realpath(
     os.path.join(os.getcwd(), os.path.dirname(__file__)))
     
-print(__location__)
-
 # Globals
-API_KEY = ""
-PLAYER_NAME = "zrnorth" # for now
+RIOT_KEY = ""
 REGION_ENDPOINT = "https://{0}.api.pvp.net/api/lol/{0}/"
 
 def setup():
     """
-    Get setup for a call, getting the api key from the config file.
+    Get setup for calls, getting the api keys from the config file.
     """
-    global API_KEY
+    global RIOT_KEY
     with open(os.path.join(__location__, 'config'), 'r') as f:
         try:
             config = json.load(f)
         except ValueError:
-            config = {'key': ""}
-    API_KEY = config["key"]
+            config = {"riot_key": "", "championgg_key": ""}
+    RIOT_KEY = config["riot_key"]
 
-# Standard API calls
+# Riot API calls
 
 def get_summoner_by_name(region, summonerNames):
     """
@@ -37,7 +34,7 @@ def get_summoner_by_name(region, summonerNames):
     """
     return requests.get(
         (REGION_ENDPOINT + "v1.4/summoner/by-name/{1}?&api_key={2}").
-        format(region, summonerNames, API_KEY))
+        format(region, summonerNames, RIOT_KEY))
         
 def get_summoner_by_id(region, summonerIds):
     """
@@ -46,8 +43,9 @@ def get_summoner_by_id(region, summonerIds):
     """
     return requests.get(
         (REGION_ENDPOINT + "v1.4/summoner/{1}?api_key={2}").
-        format(region, summonerIds, API_KEY))
+        format(region, summonerIds, RIOT_KEY))
         
+
 def get_runes(region, summonerIds):
     """
     Get rune pages mapped by summoner ID
@@ -55,7 +53,7 @@ def get_runes(region, summonerIds):
     """
     return requests.get(
         (REGION_ENDPOINT + "v1.4/summoner/{1}/runes?api_key={2}").
-        format(region, summonerIds, API_KEY))
+        format(region, summonerIds, RIOT_KEY))
         
 # Helpers
 def get_summoner_id(region, summonerName):
@@ -67,6 +65,3 @@ def get_summoner_id(region, summonerName):
         return
         
     return get_summoner_by_name(region, summonerName).json()[summonerName.lower()]['id']
-    
-    
-setup()
